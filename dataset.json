@@ -1,0 +1,146 @@
+[
+  {
+    "title": "Interstellar",
+    "description": "A team of astronauts travel through a wormhole near Saturn to find a new habitable planet for humanity as Earth faces extinction.",
+    "genre": ["sci-fi", "drama", "adventure"],
+    "year": 2014,
+    "rating": 8.6,
+    "themes": ["space travel", "time dilation", "survival", "family", "black hole"],
+    "mood": ["emotional", "epic", "mind-bending"]
+  },
+  {
+    "title": "Inception",
+    "description": "A skilled thief enters people's dreams to steal secrets and is given a chance to erase his criminal past by planting an idea in someone's mind.",
+    "genre": ["sci-fi", "thriller", "action"],
+    "year": 2010,
+    "rating": 8.8,
+    "themes": ["dream manipulation", "subconscious", "heist", "reality vs illusion"],
+    "mood": ["intense", "mind-bending", "suspenseful"]
+  },
+  {
+    "title": "Blade Runner 2049",
+    "description": "A young blade runner uncovers a long-buried secret that leads him to search for a former blade runner who has been missing for decades.",
+    "genre": ["sci-fi", "neo-noir", "drama"],
+    "year": 2017,
+    "rating": 8.0,
+    "themes": ["artificial intelligence", "identity", "memory", "humanity"],
+    "mood": ["dark", "atmospheric", "philosophical"]
+  },
+  {
+    "title": "The Matrix",
+    "description": "A hacker discovers that reality as he knows it is a simulation controlled by machines and joins a rebellion to free humanity.",
+    "genre": ["sci-fi", "action"],
+    "year": 1999,
+    "rating": 8.7,
+    "themes": ["simulation theory", "ai domination", "awakening", "freedom"],
+    "mood": ["philosophical", "action-packed", "revolutionary"]
+  },
+  {
+    "title": "Arrival",
+    "description": "A linguist is recruited to communicate with alien lifeforms after mysterious spacecraft land around the world.",
+    "genre": ["sci-fi", "drama"],
+    "year": 2016,
+    "rating": 7.9,
+    "themes": ["language", "time perception", "first contact", "communication"],
+    "mood": ["emotional", "thoughtful", "slow-paced"]
+  },
+  {
+    "title": "Her",
+    "description": "A lonely writer develops a deep emotional relationship with an advanced artificial intelligence operating system.",
+    "genre": ["romance", "sci-fi", "drama"],
+    "year": 2013,
+    "rating": 8.0,
+    "themes": ["ai relationship", "loneliness", "human emotion", "connection"],
+    "mood": ["intimate", "emotional", "futuristic"]
+  },
+  {
+    "title": "Edge of Tomorrow",
+    "description": "A soldier caught in a time loop relives the same battle against alien invaders and becomes humanity's key to survival.",
+    "genre": ["sci-fi", "action"],
+    "year": 2014,
+    "rating": 7.9,
+    "themes": ["time loop", "war", "aliens", "learning through repetition"],
+    "mood": ["fast-paced", "strategic", "action-heavy"]
+  },
+  {
+    "title": "Ex Machina",
+    "description": "A programmer is invited to evaluate a humanoid AI but soon realizes the machine may be more intelligent and deceptive than expected.",
+    "genre": ["sci-fi", "thriller"],
+    "year": 2014,
+    "rating": 7.7,
+    "themes": ["artificial intelligence", "consciousness", "manipulation", "ethics"],
+    "mood": ["minimalist", "tense", "psychological"]
+  },
+  {
+    "title": "Coherence",
+    "description": "During a dinner party, a group of friends experience increasingly strange events after a comet passes overhead, leading to reality fractures and alternate versions of themselves.",
+    "genre": ["sci-fi", "thriller", "mystery"],
+    "year": 2013,
+    "rating": 7.2,
+    "themes": ["parallel realities", "quantum physics", "identity crisis", "multiverse"],
+    "mood": ["paranoia", "tense", "confusing"]
+  },
+  {
+    "title": "Annihilation",
+    "description": "A group of scientists enter a mysterious quarantine zone where the laws of nature are being rewritten by an unknown force.",
+    "genre": ["sci-fi", "horror", "drama"],
+    "year": 2018,
+    "rating": 6.8,
+    "themes": ["mutation", "self-destruction", "alien ecosystem", "biological anomaly"],
+    "mood": ["surreal", "disturbing", "atmospheric"]
+  },
+  {
+    "title": "Prisoners",
+    "description": "A father takes matters into his own hands after his daughter and her friend go missing, while a detective investigates the case.",
+    "genre": ["thriller", "crime", "drama"],
+    "year": 2013,
+    "rating": 8.1,
+    "themes": ["kidnapping", "morality", "revenge", "desperation"],
+    "mood": ["dark", "intense", "gritty"]
+  },
+  {
+    "title": "Moon",
+    "description": "An astronaut nearing the end of a lonely three-year shift on the moon base begins to question his reality after discovering a hidden truth.",
+    "genre": ["sci-fi", "drama"],
+    "year": 2009,
+    "rating": 7.8,
+    "themes": ["cloning", "identity", "loneliness", "corporate control"],
+    "mood": ["minimalist", "isolated", "philosophical"]
+  },
+  {
+    "title": "Donnie Darko",
+    "description": "A troubled teenager experiences visions of a mysterious figure in a rabbit suit who manipulates him into committing strange acts.",
+    "genre": ["sci-fi", "drama", "thriller"],
+    "year": 2001,
+    "rating": 8.0,
+    "themes": ["time travel", "mental illness", "fate", "alternate timeline"],
+    "mood": ["dark", "psychological", "weird"]
+  },
+  {
+    "title": "Edge of Tomorrow",
+    "description": "A soldier caught in a time loop relives the same battle against alien invaders and gradually becomes humanity’s last hope.",
+    "genre": ["sci-fi", "action"],
+    "year": 2014,
+    "rating": 7.9,
+    "themes": ["time loop", "alien invasion", "war", "learning through repetition"],
+    "mood": ["fast-paced", "intense", "action-heavy"]
+  },
+  {
+    "title": "Snowpiercer",
+    "description": "In a frozen post-apocalyptic world, the last survivors of humanity live on a train divided by class warfare.",
+    "genre": ["sci-fi", "action", "drama"],
+    "year": 2013,
+    "rating": 7.1,
+    "themes": ["class struggle", "survival", "dystopia", "rebellion"],
+    "mood": ["grim", "tense", "political"]
+  },
+  {
+    "title": "The Prestige",
+    "description": "Two rival magicians engage in a dangerous obsession to create the ultimate stage illusion, sacrificing everything in the process.",
+    "genre": ["drama", "thriller", "mystery"],
+    "year": 2006,
+    "rating": 8.5,
+    "themes": ["obsession", "sacrifice", "illusion", "identity"],
+    "mood": ["dark", "twisted", "intense"]
+  }
+]

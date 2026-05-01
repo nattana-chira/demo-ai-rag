@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:7
+    container_name: ai_redis
+    ports:
+      - "6379:6379"
+
+  # backend:
+  #   build: ./apps/backend
+  #   container_name: ai_backend
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     DATABASE_URL: postgres://postgres:postgres@postgres:5432/ai_app
+  #     REDIS_HOST: redis
+  #     OPENAI_API_KEY: your_key_here
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # If you have an NVIDIA GPU, uncomment the lines below to make it fast!
+    entrypoint: /bin/sh -c "ollama serve & sleep 10 && ollama pull llama3.1 && wait"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  postgres_data:
+  ollama_data:
