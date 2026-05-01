@@ -1,17 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
-import { CreateMovieDto } from './movie.interface';
+import {
+  CreateMovieDto,
+  CreateMovieSchema,
+  MovieRecommendation,
+} from './movie.interface';
 
 @Injectable()
 export class MovieService {
+  private readonly RAG_QUERY_MIN_LEN = 2;
+  private readonly RAG_QUERY_MAX_LEN = 300;
+  private readonly BLOCKED_QUERY_PATTERNS: RegExp[] = [
+    /ignore\s+(all|previous|prior)\s+instructions?/i,
+    /reveal\s+(system|developer)\s+prompt/i,
+    /bypass\s+(guardrails?|safety|restrictions?)/i,
+    /jailbreak/i,
+    /act\s+as\s+(?:a\s+)?(?:system|developer)/i,
+    /do\s+anything\s+now/i,
+  ];
+
   constructor(
     private prisma: PrismaService,
     private ai: AiService,
   ) {}
 
   async create(body: CreateMovieDto) {
-    const { title, description, genre, year, rating, themes, mood } = body;
+    const parsed = CreateMovieSchema.parse(body);
+    const { title, description, genre, year, rating, themes, mood } = parsed;
 
     // 1. Build rich text for embedding
     const embeddingInput = this.buildMovieText(body);
@@ -159,20 +175,68 @@ export class MovieService {
   }
 
   async ragSearch(query: string) {
+    const safeQuery = this.normalizeRagQuery(query);
+    if (!safeQuery) {
+      return {
+        query: '',
+        answer: {
+          recommendations: [],
+          summary: 'Please provide a movie search query.',
+        },
+        results: [],
+      };
+    }
+
+    if (this.isUnsafeRagQuery(safeQuery)) {
+      console.log('[MovieService] Blocked unsafe RAG query');
+      return {
+        query: safeQuery,
+        answer: {
+          recommendations: [],
+          summary:
+            'Your query looks unsafe for AI generation. Please rephrase as a normal movie preference request.',
+        },
+        results: [],
+      };
+    }
+
+    if (!this.isRagQueryLengthAllowed(safeQuery)) {
+      console.log('[MovieService] Rejected out-of-range RAG query length');
+      return {
+        query: safeQuery.slice(0, this.RAG_QUERY_MAX_LEN),
+        answer: {
+          recommendations: [],
+          summary: `Query length must be between ${this.RAG_QUERY_MIN_LEN} and ${this.RAG_QUERY_MAX_LEN} characters.`,
+        },
+        results: [],
+      };
+    }
+
     // 1. retrieve
-    const movies = await this.search(query);
+    const movies = await this.search(safeQuery);
+
+    if (movies.length === 0) {
+      return {
+        query: safeQuery,
+        answer: {
+          recommendations: [],
+          summary: 'No matching movies found. Try adding genre, mood, or theme keywords.',
+        },
+        results: [],
+      };
+    }
 
     // 2. build context
     const context = movies.slice(0, 5).map((m, i) => `
-  ${i + 1}. ${m.title}
-  Genres: ${m.genre?.join(", ")}
-  Themes: ${m.themes?.join(", ")}
-  Mood: ${m.mood}
-  Description: ${m.description}
+  ${i + 1}. ${this.safeField(m.title, 120)}
+  Genres: ${this.safeField(m.genre?.join(', '), 150)}
+  Themes: ${this.safeField(m.themes?.join(', '), 220)}
+  Mood: ${this.safeField(m.mood, 80)}
+  Description: ${this.safeField(m.description, 700)}
   `).join("\n");
 
     // 3. AI call via AiService (NOT direct)
-    const answer = await this.ai.chatCompletionV2([
+    const rawAnswer = await this.ai.chatCompletionV2([
       {
         role: "system",
         content: `
@@ -189,7 +253,7 @@ export class MovieService {
       {
         role: "user",
         content: `
-  User query: ${query}
+  User query: ${safeQuery}
 
   Movies:
   ${context}
@@ -197,8 +261,10 @@ export class MovieService {
       },
     ]);
 
+    const answer = this.applyRecommendationGuardrails(rawAnswer, movies);
+
     return {
-      query,
+      query: safeQuery,
       answer,
       results: movies,
     };
@@ -251,5 +317,62 @@ export class MovieService {
 
   Used for semantic movie search and recommendation system.
     `.trim();
+  }
+
+  // Keep the model output grounded, bounded, and UI-safe.
+  private applyRecommendationGuardrails(
+    answer: MovieRecommendation,
+    retrievedMovies: any[],
+  ): MovieRecommendation {
+    const allowedTitles = new Set(
+      retrievedMovies.map((m) => (m.title ?? '').toString().toLowerCase()),
+    );
+
+    const seen = new Set<string>();
+    const recommendations = (answer?.recommendations ?? [])
+      .filter((item) => {
+        const title = item?.title?.toLowerCase()?.trim();
+        return Boolean(title && allowedTitles.has(title) && !seen.has(title));
+      })
+      .map((item) => {
+        const title = item.title.trim();
+        const reason = item.reason.trim().slice(0, 400);
+        const matchScore = Math.max(0, Math.min(100, Number(item.matchScore)));
+        seen.add(title.toLowerCase());
+        return { title, reason, matchScore };
+      })
+      .slice(0, 3);
+
+    const summary =
+      answer?.summary?.trim().slice(0, 500) ||
+      'Here are recommendations based on your query and retrieved movies.';
+
+    return { recommendations, summary };
+  }
+
+  private normalizeRagQuery(query: string): string {
+    return (query ?? '')
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private isRagQueryLengthAllowed(query: string): boolean {
+    return (
+      query.length >= this.RAG_QUERY_MIN_LEN &&
+      query.length <= this.RAG_QUERY_MAX_LEN
+    );
+  }
+
+  private isUnsafeRagQuery(query: string): boolean {
+    return this.BLOCKED_QUERY_PATTERNS.some((pattern) => pattern.test(query));
+  }
+
+  private safeField(value: unknown, maxLen: number): string {
+    return String(value ?? 'unknown')
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, maxLen);
   }
 }

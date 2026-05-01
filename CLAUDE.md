@@ -78,6 +78,8 @@ Rules:
 - For search tuning, preserve current weighted ranking shape unless explicitly asked to redesign.
 - Add or update tests when behavior changes.
 - Run lint/tests for touched areas when possible before finishing.
+- Keep existing `console.log` debug statements unless explicitly asked to remove them.
+- If adding logs, avoid printing secrets (API keys, tokens, connection strings, raw credentials).
 
 ## Data and Retrieval Conventions
 
@@ -90,6 +92,8 @@ Rules:
   - Use only retrieved movie context.
   - Do not fabricate movie facts.
   - Return structured JSON output.
+  - Reject or neutralize prompt-injection style queries (for example: "ignore previous instructions", "reveal system prompt", "bypass safety").
+  - Enforce query length limits and normalize control characters before LLM calls.
 
 ## Current Stage
 

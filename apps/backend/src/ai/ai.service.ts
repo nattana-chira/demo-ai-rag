@@ -7,19 +7,19 @@ export class AiService {
   private client: InferenceClient;
 
   constructor() {
-    console.log("HF KEY:", process.env.HUGGING_FACE_API_TOKEN);
-
+    console.log('[AiService] Initializing Hugging Face client');
     this.client = new InferenceClient(process.env.HUGGING_FACE_API_TOKEN);
   }
 
   async createEmbedding(text: string): Promise<number[]> {
+    console.log('[AiService] createEmbedding input length:', text?.length ?? 0);
+
     const res = await this.client.featureExtraction({
       model: 'sentence-transformers/all-MiniLM-L6-v2',
       inputs: text,
     });
 
-    console.log("HF RESULT:", res);
-
+    console.log('[AiService] createEmbedding success');
     return res as number[];
   }
 
@@ -36,7 +36,9 @@ export class AiService {
     return res.choices?.[0]?.message?.content?.trim() ?? '';
   }
 
-  async chatCompletionV2(messages: any[]): Promise<any> {
+  async chatCompletionV2(messages: any[]) {
+    console.log('[AiService] chatCompletionV2 request messages:', messages?.length ?? 0);
+
     // Using standard fetch or an OpenAI library pointing to your docker service
     const response = await fetch('http://localhost:11434/v1/chat/completions', {
       method: 'POST',
@@ -49,22 +51,39 @@ export class AiService {
     });
 
     const data = await response.json();
-    console.error("Ollama Response:", data?.choices?.[0]?.message?.content);
+    console.log('[AiService] chatCompletionV2 raw response received');
 
     if (data.error || !data.choices) {
       throw new Error(data.error || "Failed to get choices from Ollama");
     }
 
     try {
-      // 1. Parse the string output from the Transformer
-      const rawJson = JSON.parse(data.choices[0].message.content);
-
-      // 2. Validate with Zod (The Guardrail)
+      const rawContent = data.choices[0].message.content;
+      const rawJson = this.extractJsonFromText(rawContent);
+      console.log('[AiService] chatCompletionV2 JSON parse success');
       return MovieRecommendationSchema.parse(rawJson);
     } catch (e) {
-      // 3. Fallback if the Transformer fails to follow instructions
-      console.error("AI returned invalid JSON", response);
+      console.log('[AiService] chatCompletionV2 JSON parse fallback');
       return { recommendations: [], summary: "Sorry, I had trouble formatting the response." };
     }    
+  }
+
+  // Attempts strict parsing first, then a fenced-block JSON fallback.
+  private extractJsonFromText(text: string): unknown {
+    try {
+      return JSON.parse(text);
+    } catch {
+      const fencedJson = text.match(/```json\s*([\s\S]*?)\s*```/i);
+      if (fencedJson?.[1]) {
+        return JSON.parse(fencedJson[1]);
+      }
+
+      const objectLike = text.match(/\{[\s\S]*\}/);
+      if (objectLike?.[0]) {
+        return JSON.parse(objectLike[0]);
+      }
+
+      throw new Error('AI response did not contain valid JSON');
+    }
   }
 }
