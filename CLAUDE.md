@@ -80,6 +80,8 @@ Rules:
 - Run lint/tests for touched areas when possible before finishing.
 - Keep existing `console.log` debug statements unless explicitly asked to remove them.
 - If adding logs, avoid printing secrets (API keys, tokens, connection strings, raw credentials).
+- Preserve request correlation logging (`x-request-id`) for incoming HTTP requests.
+- Keep rate limiting enabled for AI-heavy endpoints (especially `/movies/rag`).
 
 ## Data and Retrieval Conventions
 

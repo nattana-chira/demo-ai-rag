@@ -350,6 +350,10 @@ export class MovieService {
     return { recommendations, summary };
   }
 
+  // Normalize user query into a predictable format:
+  // - strips control chars to reduce parser/prompt weirdness
+  // - collapses repeated whitespace
+  // - trims edges so validation and matching stay consistent
   private normalizeRagQuery(query: string): string {
     return (query ?? '')
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
@@ -368,6 +372,10 @@ export class MovieService {
     return this.BLOCKED_QUERY_PATTERNS.some((pattern) => pattern.test(query));
   }
 
+  // Sanitizes DB text before injecting it into LLM context:
+  // - guarantees string output for unknown/null values
+  // - removes control chars and extra spaces
+  // - caps length so one field cannot dominate the prompt
   private safeField(value: unknown, maxLen: number): string {
     return String(value ?? 'unknown')
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
