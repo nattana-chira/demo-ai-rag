@@ -90,6 +90,8 @@ Rules:
   - Pull a wider candidate pool from vector search.
   - Blend with keyword relevance.
   - Sort by final score and return top results.
+  - Cache repeated search and RAG queries in Redis with short TTLs for latency/cost control.
+- Cache embeddings in Redis (keyed by normalized text hash) to avoid repeated inference calls.
 - For RAG:
   - Use only retrieved movie context.
   - Do not fabricate movie facts.

@@ -1,24 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InferenceClient } from '@huggingface/inference';
 import { MovieRecommendationSchema } from 'src/movie/movie.interface';
+import { createHash } from 'crypto';
+import { RedisCacheService } from '../cache/redis-cache.service';
 
 @Injectable()
 export class AiService {
   private client: InferenceClient;
+  private readonly EMBEDDING_CACHE_TTL_SECONDS = 60 * 60 * 24;
 
-  constructor() {
+  constructor(private readonly cache: RedisCacheService) {
     console.log('[AiService] Initializing Hugging Face client');
     this.client = new InferenceClient(process.env.HUGGING_FACE_API_TOKEN);
   }
 
   async createEmbedding(text: string): Promise<number[]> {
     console.log('[AiService] createEmbedding input length:', text?.length ?? 0);
+    const normalizedInput = this.normalizeText(text);
+    const cacheKey = this.getEmbeddingCacheKey(normalizedInput);
+    const cached = await this.cache.getJson<number[]>(cacheKey);
+    if (cached) {
+      console.log('[AiService] createEmbedding cache hit');
+      return cached;
+    }
 
     const res = await this.client.featureExtraction({
       model: 'sentence-transformers/all-MiniLM-L6-v2',
-      inputs: text,
+      inputs: normalizedInput,
     });
 
+    await this.cache.setJson(cacheKey, res, this.EMBEDDING_CACHE_TTL_SECONDS);
     console.log('[AiService] createEmbedding success');
     return res as number[];
   }
@@ -85,5 +96,17 @@ export class AiService {
 
       throw new Error('AI response did not contain valid JSON');
     }
+  }
+
+  private normalizeText(text: string): string {
+    return String(text ?? '')
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private getEmbeddingCacheKey(text: string): string {
+    const hash = createHash('sha256').update(text).digest('hex');
+    return `emb:v1:${hash}`;
   }
 }
