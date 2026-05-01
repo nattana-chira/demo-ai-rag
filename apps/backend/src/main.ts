@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
 
   app.use((req: any, res: any, next: () => void) => {
     const requestId = req.headers['x-request-id'] || randomUUID();

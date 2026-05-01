@@ -18,6 +18,7 @@ Current stack:
   - `src/ai`: Embedding and LLM integration (`AiService`)
   - `src/movie`: Movie create/search/RAG endpoints and ranking logic
   - `prisma`: Prisma schema, migrations, and DB service
+- `apps/frontend`: Simple React + Vite UI for search and RAG endpoints
 - `infra/postgres`: Local infra files for PostgreSQL
 - `docker-compose.yml`: Service orchestration
 - `dataset.json`: Seed/source movie dataset
